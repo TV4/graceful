@@ -9,6 +9,45 @@
 
     go get -u github.com/TV4/graceful
 
+## Usage
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/TV4/graceful"
+)
+
+type server struct{}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello!"))
+}
+
+func main() {
+	hs := &http.Server{Addr: ":2017", Handler: &server{}}
+
+	go graceful.Shutdown(hs)
+
+	log.Printf("Listening on http://0.0.0.0%s\n", hs.Addr)
+
+	if err := hs.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+}
+```
+
+```
+$ go run main.go
+2017/06/19 16:35:28 Listening on http://0.0.0.0:2017
+^C
+Shutdown with timeout: 15s
+Server stopped
+```
+
 ## License (MIT)
 
 Copyright (c) 2017 TV4

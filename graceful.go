@@ -1,3 +1,45 @@
+/*
+
+Package graceful simplifies graceful shutdown of HTTP servers (Go 1.8+)
+
+Installation
+
+Just go get the package:
+
+    go get -u github.com/TV4/graceful
+
+Usage
+
+A small usage example
+
+package main
+
+    import (
+      "log"
+      "net/http"
+
+      "github.com/TV4/graceful"
+    )
+
+    type server struct{}
+
+    func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+      w.Write([]byte("Hello!"))
+    }
+
+    func main() {
+      hs := &http.Server{Addr: ":2017", Handler: &server{}}
+
+      go graceful.Shutdown(hs)
+
+      log.Printf("Listening on http://0.0.0.0%s\n", hs.Addr)
+
+      if err := hs.ListenAndServe(); err != http.ErrServerClosed {
+        log.Fatal(err)
+    	}
+    }
+
+*/
 package graceful
 
 import (
