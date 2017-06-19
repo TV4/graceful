@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// DefaultTimeout for *http.Server.Shutdown
-const DefaultTimeout = 15 * time.Second
+// Timeout for context used in call to *http.Server.Shutdown
+var Timeout = 15 * time.Second
 
 // Format strings used by the logger
 var (
@@ -22,11 +22,11 @@ var (
 )
 
 // Shutdown blocks until os.Interrupt or syscall.SIGTERM received, then
-// running *http.Server.Shutdown with the provided timeout
-func Shutdown(hs *http.Server, logger *log.Logger, timeout time.Duration) {
+// running *http.Server.Shutdown with a context having a timeout
+func Shutdown(hs *http.Server, logger *log.Logger) {
 	wait()
 
-	shutdown(hs, logger, timeout)
+	shutdown(hs, logger, Timeout)
 }
 
 func wait() {
