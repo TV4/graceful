@@ -4,15 +4,27 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
 
-// Timeout for context used in call to *http.Server.Shutdown
-var Timeout = 15 * time.Second
+// Shutdowner is implemented by *http.Server
+type Shutdowner interface {
+	Shutdown(ctx context.Context) error
+}
+
+// Logger is implemented by *log.Logger
+type Logger interface {
+	Printf(format string, v ...interface{})
+}
+
+// DefaultTimeout for context used in call to *http.Server.Shutdown
+var DefaultTimeout = 15 * time.Second
+
+// DefaultLogger is the logger used by the shutdown function
+var DefaultLogger = log.New(os.Stdout, "", 0)
 
 // Format strings used by the logger
 var (
@@ -23,10 +35,10 @@ var (
 
 // Shutdown blocks until os.Interrupt or syscall.SIGTERM received, then
 // running *http.Server.Shutdown with a context having a timeout
-func Shutdown(hs *http.Server, logger *log.Logger) {
+func Shutdown(s Shutdowner) {
 	wait()
 
-	shutdown(hs, logger, Timeout)
+	shutdown(s, DefaultLogger, DefaultTimeout)
 }
 
 func wait() {
@@ -37,8 +49,8 @@ func wait() {
 	<-c
 }
 
-func shutdown(hs *http.Server, logger *log.Logger, timeout time.Duration) {
-	if hs == nil {
+func shutdown(s Shutdowner, logger Logger, timeout time.Duration) {
+	if s == nil {
 		return
 	}
 
@@ -51,7 +63,7 @@ func shutdown(hs *http.Server, logger *log.Logger, timeout time.Duration) {
 
 	logger.Printf(ShutdownFormat, timeout)
 
-	if err := hs.Shutdown(ctx); err != nil {
+	if err := s.Shutdown(ctx); err != nil {
 		logger.Printf(ErrorFormat, err)
 	} else {
 		logger.Printf(StoppedFormat)

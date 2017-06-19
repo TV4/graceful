@@ -20,9 +20,9 @@ func TestShutdown(t *testing.T) {
 	t.Run("logger", func(t *testing.T) {
 		var buf bytes.Buffer
 
-		shutdown(&http.Server{}, log.New(&buf, "", 0), Timeout)
+		shutdown(&http.Server{}, log.New(&buf, "", 0), DefaultTimeout)
 
-		want := fmt.Sprintf(ShutdownFormat+StoppedFormat, Timeout)
+		want := fmt.Sprintf(ShutdownFormat+StoppedFormat, DefaultTimeout)
 
 		if got := buf.String(); got != want {
 			t.Fatalf("buf.String() = %q, want %q", got, want)
