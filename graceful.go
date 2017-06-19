@@ -21,9 +21,9 @@ var (
 	StoppedFormat  = "Server stopped\n"
 )
 
-// Server blocks until os.Interrupt or syscall.SIGTERM received, then
+// Shutdown blocks until os.Interrupt or syscall.SIGTERM received, then
 // running *http.Server.Shutdown with the provided timeout
-func Server(hs *http.Server, logger *log.Logger, timeout time.Duration) {
+func Shutdown(hs *http.Server, logger *log.Logger, timeout time.Duration) {
 	wait()
 
 	shutdown(hs, logger, timeout)
