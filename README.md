@@ -49,6 +49,41 @@ Shutdown with timeout: 15s
 Server stopped
 ```
 
+### You can also use `graceful.LogListenAndServe`
+
+```go
+package main
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/TV4/graceful"
+)
+
+type server struct{}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(2 * time.Second)
+	w.Write([]byte("Hello!"))
+}
+
+func main() {
+	graceful.LogListenAndServe(&http.Server{
+		Addr:    ":2017",
+		Handler: &server{},
+	})
+}
+```
+
+```
+$ go run main.go
+Listening on http://0.0.0.0:2017
+^C
+Shutdown with timeout: 15s
+Server stopped
+```
+
 ## License (MIT)
 
 Copyright (c) 2017 TV4
