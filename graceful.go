@@ -12,31 +12,32 @@ Usage
 
 A small usage example
 
-package main
+    package main
 
     import (
-      "log"
-      "net/http"
+    	"log"
+    	"net/http"
+    	"time"
 
-      "github.com/TV4/graceful"
+    	"github.com/TV4/graceful"
     )
 
     type server struct{}
 
     func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-      w.Write([]byte("Hello!"))
+    	time.Sleep(2 * time.Second)
+    	w.Write([]byte("Hello!"))
     }
 
     func main() {
-      hs := &http.Server{Addr: ":2017", Handler: &server{}}
+    	addr := ":2017"
 
-      go graceful.Shutdown(hs)
+    	log.Printf("Listening on http://0.0.0.0%s\n", addr)
 
-      log.Printf("Listening on http://0.0.0.0%s\n", hs.Addr)
-
-      if err := hs.ListenAndServe(); err != http.ErrServerClosed {
-        log.Fatal(err)
-      }
+    	graceful.ListenAndServe(&http.Server{
+    		Addr:    addr,
+    		Handler: &server{},
+    	})
     }
 
 */
@@ -46,11 +47,18 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
+
+// Server is implemented by *http.Server
+type Server interface {
+	ListenAndServe() error
+	Shutdowner
+}
 
 // Shutdowner is implemented by *http.Server
 type Shutdowner interface {
@@ -60,13 +68,14 @@ type Shutdowner interface {
 // Logger is implemented by *log.Logger
 type Logger interface {
 	Printf(format string, v ...interface{})
+	Fatal(...interface{})
 }
 
 // DefaultTimeout for context used in call to *http.Server.Shutdown
 var DefaultTimeout = 15 * time.Second
 
 // DefaultLogger is the logger used by the shutdown function
-var DefaultLogger = log.New(os.Stdout, "", 0)
+var DefaultLogger Logger = log.New(os.Stdout, "", 0)
 
 // Format strings used by the logger
 var (
@@ -74,6 +83,17 @@ var (
 	ErrorFormat    = "Error: %v\n"
 	StoppedFormat  = "Server stopped\n"
 )
+
+// ListenAndServe starts the server in a goroutine and then calls Shutdown
+func ListenAndServe(s Server) {
+	go func() {
+		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			DefaultLogger.Fatal(err)
+		}
+	}()
+
+	Shutdown(s)
+}
 
 // Shutdown blocks until os.Interrupt or syscall.SIGTERM received, then
 // running *http.Server.Shutdown with a context having a timeout

@@ -17,6 +17,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/TV4/graceful"
 )
@@ -24,19 +25,19 @@ import (
 type server struct{}
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(2 * time.Second)
 	w.Write([]byte("Hello!"))
 }
 
 func main() {
-	hs := &http.Server{Addr: ":2017", Handler: &server{}}
+	addr := ":2017"
 
-	go graceful.Shutdown(hs)
+	log.Printf("Listening on http://0.0.0.0%s\n", addr)
 
-	log.Printf("Listening on http://0.0.0.0%s\n", hs.Addr)
-
-	if err := hs.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
+	graceful.ListenAndServe(&http.Server{
+		Addr:    addr,
+		Handler: &server{},
+	})
 }
 ```
 
