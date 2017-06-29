@@ -79,10 +79,18 @@ var DefaultLogger Logger = log.New(os.Stdout, "", 0)
 
 // Format strings used by the logger
 var (
-	ShutdownFormat = "\nShutdown with timeout: %s\n"
-	ErrorFormat    = "Error: %v\n"
-	StoppedFormat  = "Server stopped\n"
+	ListeningFormat = "Listening on http://0.0.0.0%s\n"
+	ShutdownFormat  = "\nShutdown with timeout: %s\n"
+	ErrorFormat     = "Error: %v\n"
+	StoppedFormat   = "Server stopped\n"
 )
+
+// LogListenAndServe logs using the DefaultLogger and then calls ListenAndServe
+func LogListenAndServe(hs *http.Server) {
+	DefaultLogger.Printf(ListeningFormat, hs.Addr)
+
+	ListenAndServe(hs)
+}
 
 // ListenAndServe starts the server in a goroutine and then calls Shutdown
 func ListenAndServe(s Server) {
