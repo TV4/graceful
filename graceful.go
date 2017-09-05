@@ -79,12 +79,15 @@ type Logger interface {
 	Fatal(...interface{})
 }
 
-// Timeout for context used in call to *http.Server.Shutdown
-var Timeout = 15 * time.Second
-
 // logger is the logger used by the shutdown function
 // (defaults to logging to ioutil.Discard)
 var logger Logger = log.New(ioutil.Discard, "", 0)
+
+// signals is the channel used to signal shutdown
+var signals chan os.Signal
+
+// Timeout for context used in call to *http.Server.Shutdown
+var Timeout = 15 * time.Second
 
 // Format strings used by the logger
 var (
@@ -125,17 +128,13 @@ func ListenAndServe(s Server) {
 // Shutdown blocks until os.Interrupt or syscall.SIGTERM received, then
 // running *http.Server.Shutdown with a context having a timeout
 func Shutdown(s Shutdowner) {
-	wait()
+	signals = make(chan os.Signal, 1)
+
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+
+	<-signals
 
 	shutdown(s, logger)
-}
-
-func wait() {
-	c := make(chan os.Signal, 1)
-
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	<-c
 }
 
 func shutdown(s Shutdowner, logger Logger) {
