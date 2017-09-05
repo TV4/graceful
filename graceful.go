@@ -163,6 +163,7 @@ func shutdown(s Shutdowner, logger Logger) {
 				case <-ctx.Done():
 					if err := ctx.Err(); err != nil {
 						logger.Printf(ErrorFormat, err)
+						return
 					}
 				default:
 					if deadline, ok := ctx.Deadline(); ok {
@@ -185,6 +186,7 @@ func shutdown(s Shutdowner, logger Logger) {
 
 					if err := <-done; err != nil {
 						logger.Printf(ErrorFormat, err)
+						return
 					}
 				}
 			}
