@@ -45,8 +45,6 @@ func main() {
 $ go run main.go
 2017/06/19 16:35:28 Listening on http://0.0.0.0:2017
 ^C
-Shutdown with timeout: 15s
-Server stopped
 ```
 
 ### You can also use `graceful.LogListenAndServe`
@@ -80,8 +78,9 @@ func main() {
 $ go run main.go
 Listening on http://0.0.0.0:2017
 ^C
-Shutdown with timeout: 15s
-Server stopped
+Server shutdown with timeout: 15s
+Finished all in-flight HTTP requests
+Shutdown finished 14s before deadline
 ```
 
 ## License (MIT)
