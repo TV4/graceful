@@ -22,7 +22,7 @@ func TestShutdown(t *testing.T) {
 
 		shutdown(&http.Server{}, log.New(&buf, "", 0))
 
-		want := fmt.Sprintf(ShutdownFormat+ServerStopped, Timeout)
+		want := fmt.Sprintf(ShutdownFormat+FinishedHTTP+FinishedFormat, Timeout, 15)
 
 		if got := buf.String(); got != want {
 			t.Fatalf("buf.String() = %q, want %q", got, want)
