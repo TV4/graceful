@@ -68,7 +68,7 @@ type Server interface {
 	Shutdowner
 }
 
-// Shutdowner is implemented by *http.Server
+// Shutdowner is implemented by *http.Server, and optionally by *http.Server.Handler
 type Shutdowner interface {
 	Shutdown(ctx context.Context) error
 }
