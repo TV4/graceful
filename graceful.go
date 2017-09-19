@@ -100,7 +100,7 @@ var (
 )
 
 // LogListenAndServe logs using the logger and then calls ListenAndServe
-func LogListenAndServe(hs *http.Server, loggers ...Logger) {
+func LogListenAndServe(s Server, loggers ...Logger) {
 	if len(loggers) > 0 {
 		if logger = loggers[0]; logger == nil {
 			logger = log.New(ioutil.Discard, "", 0)
@@ -109,9 +109,11 @@ func LogListenAndServe(hs *http.Server, loggers ...Logger) {
 		logger = log.New(os.Stdout, "", 0)
 	}
 
-	logger.Printf(ListeningFormat, hs.Addr)
+	if hs, ok := s.(*http.Server); ok {
+		logger.Printf(ListeningFormat, hs.Addr)
+	}
 
-	ListenAndServe(hs)
+	ListenAndServe(s)
 }
 
 // ListenAndServe starts the server in a goroutine and then calls Shutdown
@@ -154,9 +156,9 @@ func shutdown(s Shutdowner, logger Logger) {
 	if err := s.Shutdown(ctx); err != nil {
 		logger.Printf(ErrorFormat, err)
 	} else {
-		logger.Printf(FinishedHTTP)
-
 		if hs, ok := s.(*http.Server); ok {
+			logger.Printf(FinishedHTTP)
+
 			if hss, ok := hs.Handler.(Shutdowner); ok {
 				select {
 				case <-ctx.Done():
