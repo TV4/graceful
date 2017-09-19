@@ -83,6 +83,58 @@ Finished all in-flight HTTP requests
 Shutdown finished 14s before deadline
 ```
 
+### And optionally your handler can implement the Shutdowner interface
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	graceful "github.com/TV4/graceful"
+)
+
+func main() {
+	graceful.LogListenAndServe(&http.Server{
+		Addr:    ":8080",
+		Handler: &server{},
+	})
+}
+
+type server struct{}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello world!")
+}
+
+func (s *server) Shutdown(ctx context.Context) error {
+	// Here you can do anything that you need to do
+	// after the *http.Server has stopped accepting
+	// new connections and finished its Shutdown
+
+	// The ctx is the same as the context used to
+	// perform *https.Server.Shutdown and thus
+	// shares the timeout (15 seconds by default)
+
+	fmt.Println("Finished *server.Shutdown")
+
+	return nil
+}
+```
+
+```
+$ go run main.go
+Listening on http://0.0.0.0:8080
+^C
+Server shutdown with timeout: 15s
+Finished all in-flight HTTP requests
+Shutting down handler with timeout: 15s
+Finished *server.Shutdown
+Shutdown finished 15s before deadline
+```
+
 ## License (MIT)
 
 Copyright (c) 2017 TV4
