@@ -68,6 +68,12 @@ type Server interface {
 	Shutdowner
 }
 
+// TLSServer is implemented by *http.Server
+type TLSServer interface {
+	ListenAndServeTLS(string, string) error
+	Shutdowner
+}
+
 // Shutdowner is implemented by *http.Server, and optionally by *http.Server.Handler
 type Shutdowner interface {
 	Shutdown(ctx context.Context) error
@@ -101,15 +107,8 @@ var (
 
 // LogListenAndServe logs using the logger and then calls ListenAndServe
 func LogListenAndServe(s Server, loggers ...Logger) {
-	if len(loggers) > 0 {
-		if logger = loggers[0]; logger == nil {
-			logger = log.New(ioutil.Discard, "", 0)
-		}
-	} else {
-		logger = log.New(os.Stdout, "", 0)
-	}
-
 	if hs, ok := s.(*http.Server); ok {
+		logger := getLogger(loggers...)
 		logger.Printf(ListeningFormat, hs.Addr)
 	}
 
@@ -120,6 +119,17 @@ func LogListenAndServe(s Server, loggers ...Logger) {
 func ListenAndServe(s Server) {
 	go func() {
 		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			logger.Fatal(err)
+		}
+	}()
+
+	Shutdown(s)
+}
+
+// ListenAndServeTLS starts the server in a goroutine and then calls Shutdown
+func ListenAndServeTLS(s TLSServer, certFile, keyFile string) {
+	go func() {
+		if err := s.ListenAndServeTLS(certFile, keyFile); err != http.ErrServerClosed {
 			logger.Fatal(err)
 		}
 	}()
@@ -198,4 +208,16 @@ func shutdown(s Shutdowner, logger Logger) {
 			logger.Printf(FinishedFormat, secs)
 		}
 	}
+}
+
+func getLogger(loggers ...Logger) Logger {
+	if len(loggers) > 0 {
+		if logger = loggers[0]; logger != nil {
+			return logger
+		}
+
+		return log.New(ioutil.Discard, "", 0)
+	}
+
+	return log.New(os.Stdout, "", 0)
 }

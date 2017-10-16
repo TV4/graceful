@@ -12,6 +12,31 @@ import (
 	"time"
 )
 
+func TestListenAndServeTLS(t *testing.T) {
+	var buf bytes.Buffer
+
+	logger := log.New(&buf, "", 0)
+
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		signals <- os.Interrupt
+	}()
+
+	ListenAndServeTLS(&http.Server{
+		Addr: ":0", Handler: &testHandler{logger},
+	}, "testdata/server.crt", "testdata/server.key")
+
+	s := buf.String()
+
+	for _, want := range []string{
+		"Shutdown in testHandler",
+	} {
+		if !strings.Contains(s, want) {
+			t.Fatalf("log output does not include %q", want)
+		}
+	}
+}
+
 func TestLogListenAndServe(t *testing.T) {
 	t.Run("with logger", func(t *testing.T) {
 		var buf bytes.Buffer
