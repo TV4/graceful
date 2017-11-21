@@ -185,10 +185,8 @@ func shutdown(s Shutdowner, logger Logger) {
 					done := make(chan error)
 
 					go func() {
-						select {
-						case <-ctx.Done():
-							done <- ctx.Err()
-						}
+						<-ctx.Done()
+						done <- ctx.Err()
 					}()
 
 					go func() {
