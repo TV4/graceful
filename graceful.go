@@ -178,7 +178,7 @@ func shutdown(s Shutdowner, logger Logger) {
 					}
 				default:
 					if deadline, ok := ctx.Deadline(); ok {
-						secs := (deadline.Sub(time.Now()) + time.Second/2) / time.Second
+						secs := (time.Until(deadline) + time.Second/2) / time.Second
 						logger.Printf(HandlerShutdownFormat, secs)
 					}
 
@@ -204,7 +204,7 @@ func shutdown(s Shutdowner, logger Logger) {
 		}
 
 		if deadline, ok := ctx.Deadline(); ok {
-			secs := (deadline.Sub(time.Now()) + time.Second/2) / time.Second
+			secs := (time.Until(deadline) + time.Second/2) / time.Second
 			logger.Printf(FinishedFormat, secs)
 		}
 	}
