@@ -108,7 +108,7 @@ var (
 // LogListenAndServe logs using the logger and then calls ListenAndServe
 func LogListenAndServe(s Server, loggers ...Logger) {
 	if hs, ok := s.(*http.Server); ok {
-		logger := getLogger(loggers...)
+		logger = getLogger(loggers...)
 		logger.Printf(ListeningFormat, hs.Addr)
 	}
 
