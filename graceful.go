@@ -55,6 +55,7 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -97,7 +98,7 @@ var Timeout = 15 * time.Second
 
 // Format strings used by the logger
 var (
-	ListeningFormat       = "Listening on http://0.0.0.0%s\n"
+	ListeningFormat       = "Listening on http://%s\n"
 	ShutdownFormat        = "\nServer shutdown with timeout: %s\n"
 	ErrorFormat           = "Error: %v\n"
 	FinishedFormat        = "Shutdown finished %ds before deadline\n"
@@ -109,7 +110,17 @@ var (
 func LogListenAndServe(s Server, loggers ...Logger) {
 	if hs, ok := s.(*http.Server); ok {
 		logger = getLogger(loggers...)
-		logger.Printf(ListeningFormat, hs.Addr)
+		addr := hs.Addr
+		if addr == "" {
+			addr = ":80"
+		}
+		host, port, err := net.SplitHostPort(addr)
+		if err == nil {
+			if host == "" {
+				host = net.IPv4zero.String()
+			}
+			logger.Printf(ListeningFormat, net.JoinHostPort(host, port))
+		}
 	}
 
 	ListenAndServe(s)
