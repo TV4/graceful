@@ -110,15 +110,12 @@ var (
 func LogListenAndServe(s Server, loggers ...Logger) {
 	if hs, ok := s.(*http.Server); ok {
 		logger = getLogger(loggers...)
-		addr := hs.Addr
-		if addr == "" {
-			addr = ":80"
-		}
-		host, port, err := net.SplitHostPort(addr)
-		if err == nil {
+
+		if host, port, err := net.SplitHostPort(hs.Addr); err == nil {
 			if host == "" {
 				host = net.IPv4zero.String()
 			}
+
 			logger.Printf(ListeningFormat, net.JoinHostPort(host, port))
 		}
 	}
