@@ -218,8 +218,8 @@ func shutdown(s Shutdowner, logger Logger) {
 
 func getLogger(loggers ...Logger) Logger {
 	if len(loggers) > 0 {
-		if logger = loggers[0]; logger != nil {
-			return logger
+		if loggers[0] != nil {
+			return loggers[0]
 		}
 
 		return log.New(ioutil.Discard, "", 0)
