@@ -123,6 +123,23 @@ func LogListenAndServe(s Server, loggers ...Logger) {
 	ListenAndServe(s)
 }
 
+// LogListenAndServeTLS logs using the logger and then calls ListenAndServeTLS
+func LogListenAndServeTLS(s TLSServer, certFile, keyFile string, loggers ...Logger) {
+	if hs, ok := s.(*http.Server); ok {
+		logger = getLogger(loggers...)
+
+		if host, port, err := net.SplitHostPort(hs.Addr); err == nil {
+			if host == "" {
+				host = net.IPv4zero.String()
+			}
+
+			logger.Printf(ListeningFormat, net.JoinHostPort(host, port))
+		}
+	}
+
+	ListenAndServeTLS(s, certFile, keyFile)
+}
+
 // ListenAndServe starts the server in a goroutine and then calls Shutdown
 func ListenAndServe(s Server) {
 	go func() {
