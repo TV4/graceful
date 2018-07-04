@@ -83,6 +83,7 @@ type Shutdowner interface {
 // Logger is implemented by *log.Logger
 type Logger interface {
 	Printf(format string, v ...interface{})
+	Fatalf(format string, v ...interface{})
 	Fatal(...interface{})
 }
 
@@ -189,7 +190,7 @@ func shutdown(s Shutdowner, logger Logger) {
 	logger.Printf(ShutdownFormat, Timeout)
 
 	if err := s.Shutdown(ctx); err != nil {
-		logger.Printf(ErrorFormat, err)
+		logger.Fatalf(ErrorFormat, err)
 	} else {
 		if hs, ok := s.(*http.Server); ok {
 			logger.Printf(FinishedHTTP)
@@ -198,7 +199,7 @@ func shutdown(s Shutdowner, logger Logger) {
 				select {
 				case <-ctx.Done():
 					if err := ctx.Err(); err != nil {
-						logger.Printf(ErrorFormat, err)
+						logger.Fatalf(ErrorFormat, err)
 						return
 					}
 				default:
@@ -219,7 +220,7 @@ func shutdown(s Shutdowner, logger Logger) {
 					}()
 
 					if err := <-done; err != nil {
-						logger.Printf(ErrorFormat, err)
+						logger.Fatalf(ErrorFormat, err)
 						return
 					}
 				}
