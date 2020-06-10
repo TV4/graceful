@@ -171,6 +171,13 @@ func shutdown(s Shutdowner, logger Logger) {
 
 	logger.Printf(ShutdownFormat, Timeout)
 
+	// Stop keeping alive HTTP connections
+	if hs, ok := s.(interface {
+		SetKeepAlivesEnabled(bool)
+	}); ok {
+		hs.SetKeepAlivesEnabled(false)
+	}
+
 	if err := s.Shutdown(ctx); err != nil {
 		logger.Printf(ErrorFormat, err)
 	} else {
