@@ -1,6 +1,6 @@
 /*
 
-Package graceful simplifies graceful shutdown of HTTP servers (Go 1.8+)
+Package graceful simplifies graceful shutdown of HTTP servers (Go 1.8+).
 
 Installation
 
