@@ -1,7 +1,7 @@
 language: go
 
 go:
-  - "1.15.7"
+  - "1.16.2"
 
 script:
   - go vet ./...
