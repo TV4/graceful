@@ -1,3 +1,5 @@
+**Deprecated; this package is no longer maintained.**
+
 # graceful
 
 [![Build Status](https://travis-ci.org/TV4/graceful.svg?branch=master)](https://travis-ci.org/TV4/graceful)

@@ -1,4 +1,5 @@
 /*
+Deprecated: This package is no longer maintained.
 
 Package graceful simplifies graceful shutdown of HTTP servers (Go 1.8+).
 
