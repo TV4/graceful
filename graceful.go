@@ -84,6 +84,7 @@ type Shutdowner interface {
 // Logger is implemented by *log.Logger
 type Logger interface {
 	Printf(format string, v ...interface{})
+	Fatalf(format string, v ...interface{})
 	Fatal(...interface{})
 }
 
@@ -122,6 +123,23 @@ func LogListenAndServe(s Server, loggers ...Logger) {
 	}
 
 	ListenAndServe(s)
+}
+
+// LogListenAndServeTLS logs using the logger and then calls ListenAndServeTLS
+func LogListenAndServeTLS(s TLSServer, certFile, keyFile string, loggers ...Logger) {
+	if hs, ok := s.(*http.Server); ok {
+		logger = getLogger(loggers...)
+
+		if host, port, err := net.SplitHostPort(hs.Addr); err == nil {
+			if host == "" {
+				host = net.IPv4zero.String()
+			}
+
+			logger.Printf(ListeningFormat, net.JoinHostPort(host, port))
+		}
+	}
+
+	ListenAndServeTLS(s, certFile, keyFile)
 }
 
 // ListenAndServe starts the server in a goroutine and then calls Shutdown
@@ -180,7 +198,7 @@ func shutdown(s Shutdowner, logger Logger) {
 	}
 
 	if err := s.Shutdown(ctx); err != nil {
-		logger.Printf(ErrorFormat, err)
+		logger.Fatalf(ErrorFormat, err)
 	} else {
 		if hs, ok := s.(*http.Server); ok {
 			logger.Printf(FinishedHTTP)
@@ -189,7 +207,7 @@ func shutdown(s Shutdowner, logger Logger) {
 				select {
 				case <-ctx.Done():
 					if err := ctx.Err(); err != nil {
-						logger.Printf(ErrorFormat, err)
+						logger.Fatalf(ErrorFormat, err)
 						return
 					}
 				default:
@@ -210,7 +228,7 @@ func shutdown(s Shutdowner, logger Logger) {
 					}()
 
 					if err := <-done; err != nil {
-						logger.Printf(ErrorFormat, err)
+						logger.Fatalf(ErrorFormat, err)
 						return
 					}
 				}
